@@ -1,0 +1,36 @@
+name: Upload to Azure Table Storage
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Azure CLI
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+    - name: Get Changed Files
+      id: changes
+      run: |
+        git fetch --depth=2
+        git diff --name-only HEAD^ HEAD > changed_files.txt
+    
+    - name: Upload Changed Files to Azure Table Storage
+      run: |
+            while IFS= read -r file; do
+              if [[ -f "$file" ]]; then
+                content=$(cat "$file" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+                json="{\"PartitionKey\":\"Category\",\"RowKey\":\"$(basename "$file")\",\"Content\":\"$content\"}"
+                az storage entity insert --account-name 'stredstashita' --table-name 'posts' --entity "$json"
+              fi
+            done < changed_files.txt
