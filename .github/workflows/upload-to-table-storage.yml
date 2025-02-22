@@ -13,17 +13,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name : Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
     - name: Set up Azure CLI
-      uses: azure/cli@v1
+      uses: azure/cli@v2
       with:
         inlineScript: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-          git fetch --depth=2
-          git diff --name-only HEAD^ HEAD > changed_files.txt
+          echo "Azure CLI set up"
+          az account show
+          az storage -h
+      
 
     - name: Upload Changed Files to Azure Blob Storage
       run: |
-        az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
         while IFS= read -r file; do
           if [[ -f "$file" ]]; then
             content=$(cat "$file" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
