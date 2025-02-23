@@ -41,7 +41,7 @@ jobs:
             content=$(cat "$file" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
             json="{\"PartitionKey\":\"Category\",\"RowKey\":\"$(basename "$file")\",\"Content\":\"$content\"}"
             echo "Inserting entity: $json"
-            az storage entity insert --account-name 'stredstashita' --table-name 'posts' --entity PartitionKey=Category RowKey=$(basename "$file") Content="$content" --auth-mode login || {
+            az storage entity insert --account-name 'stredstashita' --table-name 'posts' --entity PartitionKey=Category RowKey=$(basename "$file") Content="$content" --auth-mode login --if-exists merge || {
               echo "Failed to insert entity: $json"
               exit 1
             }
