@@ -40,6 +40,6 @@ jobs:
             content=$(cat "$file" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
             json="{\"Post\":\"$content\"}"
             echo "Inserting entity: $json"
-            az storage entity insert --account-name 'stredstashita' --t 'posts' --entity PartitionKey=Category RowKey=$file Content="$json" --auth-mode login
+            az storage entity insert --account-name 'stredstashita' --table-name 'posts' --entity PartitionKey=Category RowKey=$file Content="$json" --auth-mode login
           fi
         done < changed_files.txt
