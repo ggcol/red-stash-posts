@@ -38,8 +38,8 @@ jobs:
         while IFS= read -r file; do
           if [[ -f "$file" ]]; then
             content=$(cat "$file" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-            json="{\"PartitionKey\":\"Category\",\"RowKey\":\"$(basename "$file")\",\"Content\":\"$content\"}"
+            json="{\"Post\":\"$content\"}"
             echo "Inserting entity: $json"
-            az storage entity insert --account-name 'stredstashita' --table-name 'posts' --entity "$json" --auth-mode login
+            az storage entity insert --account-name 'stredstashita' --t 'posts' --entity PartitionKey=Category RowKey=$file Content="$json" --auth-mode login
           fi
         done < changed_files.txt
