@@ -32,16 +32,18 @@ jobs:
       id: changes
       run: |
         git fetch --depth=2
-        git diff --name-only HEAD^ HEAD > changed_files.txt
+        git diff --name-only HEAD^ HEAD | grep -v '^template/' | grep -v '^\\.' > changed_files.txt
 
     - name: Upload Changed Files to Azure Table Storage
       run: |
         while IFS= read -r file; do
           if [[ -f "$file" ]]; then
-            content=$(cat "$file" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-            json="{\"PartitionKey\":\"Category\",\"RowKey\":\"$(basename "$file")\",\"Content\":\"$content\"}"
+            title=$(grep '^Title:' "$file" | sed 's/Title: //')
+            category=$(grep '^Category:' "$file" | sed 's/Category: //')
+            content=$(sed -n '/^Content:/,$p' "$file" | sed '1d' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+            json="{\"PartitionKey\":\"$category\",\"RowKey\":\"$title\",\"Content\":\"$content\"}"
             echo "Inserting entity: $json"
-            az storage entity insert --account-name 'stredstashita' --table-name 'posts' --entity PartitionKey=Category RowKey=$(basename "$file") Content="$content" --auth-mode login --if-exists merge || {
+            az storage entity insert --account-name 'stredstashita' --table-name 'posts' --entity PartitionKey=$category RowKey=$title Content="$content" --auth-mode login --if-exists merge || {
               echo "Failed to insert entity: $json"
               exit 1
             }
