@@ -8,7 +8,7 @@ This is a practical guide to GitHub client flow authentication. GitHub Apps can 
 
 **Navigate to Settings -> Developer settings -> GitHub Apps.**
 
-![image](image.png)
+![image](./image.png)
 
 Click on **New GitHub App**, give it a name, a description (optional), a homepage URL (if you don't have any frontend, simply add your repository URL), and assign the needed permissions (remember the principle of least privilege).
 
